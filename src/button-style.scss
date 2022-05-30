@@ -1,0 +1,20 @@
+@mixin button-style {
+	font-size: 1em;
+	padding: 0.5em 1em;
+	border-radius: 1em;
+	background: #2a9d8f;
+	transition: background-color 0.2s, border-radius 0.2s;
+	color: lightgray;
+
+	&:hover {
+		background-color: #3bd4c3;
+		border-radius: 1.5em;
+		cursor: pointer;
+	}
+}
+
+@mixin link-style {
+	@include button-style;
+
+	text-decoration: none;
+}
