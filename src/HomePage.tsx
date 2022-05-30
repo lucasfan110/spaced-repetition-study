@@ -1,11 +1,22 @@
 import "./HomePage.scss";
 import { recentDeck } from "./Deck";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function HomePage(): JSX.Element {
-	const recentList = recentDeck.info.map(({ deckName }) => (
-		<tr key={deckName} className="list-row">
+	const navigate = useNavigate();
+
+	const recentList = recentDeck.info.map(({ deckName, lastOpened }) => (
+		<tr
+			key={deckName}
+			className="list-row"
+			onClick={() => {
+				recentDeck.deckOpened(deckName);
+				console.log(`going to /decks/${encodeURI(deckName)}`);
+				navigate(`/decks/${encodeURI(deckName)}`, { replace: true });
+			}}
+		>
 			<td>{deckName}</td>
+			<td>{lastOpened?.toLocaleDateString() ?? "Unknown"}</td>
 		</tr>
 	));
 
@@ -13,12 +24,13 @@ export default function HomePage(): JSX.Element {
 		<main className="home-page">
 			<h1>Welcome to Spaced Repetition Learning App!</h1>
 
-			<p className="center">Open recent</p>
+			<h2 className="center">Open recent</h2>
 
 			<table className="recent-list">
 				<thead>
 					<tr>
 						<th>Name</th>
+						<th>Last Opened</th>
 					</tr>
 				</thead>
 				<tbody>

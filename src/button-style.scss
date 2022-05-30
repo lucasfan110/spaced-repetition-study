@@ -1,3 +1,5 @@
+@import "./variables.scss";
+
 @mixin button-style {
 	font-size: 1em;
 	padding: 0.5em 1em;
@@ -7,7 +9,7 @@
 	color: lightgray;
 
 	&:hover {
-		background-color: #3bd4c3;
+		background-color: $hover-color;
 		border-radius: 1.5em;
 		cursor: pointer;
 	}

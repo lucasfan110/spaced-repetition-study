@@ -80,12 +80,6 @@ export default class Deck {
 	};
 }
 
-// type RecentDeck = {
-// 	name: string;
-// 	lastOpened: Date;
-// };
-// type RecentDeckInfo = RecentDeck[];
-
 export type Info = {
 	deckName: string;
 	lastOpened: Date;
@@ -111,7 +105,12 @@ export class RecentDeckInfo {
 
 		let infos: Info[];
 		try {
-			infos = JSON.parse(recentJson) as Info[];
+			infos = JSON.parse(recentJson, (key, value) => {
+				if (key === "lastOpened") {
+					return new Date(value);
+				}
+				return value;
+			}) as Info[];
 		} catch (e) {
 			console.error("Failed to parse recents.json! Error: " + e);
 			return new RecentDeckInfo([]);
@@ -122,6 +121,15 @@ export class RecentDeckInfo {
 
 	public deckOpened = (deckName: string) => {
 		const index = this.m_info.findIndex(info => info.deckName === deckName);
+		if (index === -1) {
+			// Cannot found the deck with name, which means new deck is added.
+			this.m_info.push({ deckName, lastOpened: new Date() });
+		} else {
+			// Move that element to the top.
+			const info = this.m_info.splice(index, 1)[0];
+			info.lastOpened = new Date();
+			this.m_info.unshift(info);
+		}
 	};
 
 	get info() {
