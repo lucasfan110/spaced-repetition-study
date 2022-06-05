@@ -1,38 +1,5 @@
 @import "./button-style.scss";
 
-a {
-	color: #f4a261;
-}
-
 body {
-	background: #264653;
-	color: lightgray;
 	font-family: Roboto, sans-serif;
-	margin: 0;
-}
-
-button {
-	@include button-style;
-}
-
-h1 {
-	text-align: center;
-}
-
-.home-page {
-	width: 100vw;
-}
-
-.center {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.button {
-	@include button-style;
-}
-
-.link-button {
-	@include link-style;
 }

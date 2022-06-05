@@ -1,24 +1,21 @@
 @import "./variables.scss";
 
 .recent-list {
-	margin: 0 auto;
-	border-spacing: 0;
-	font-size: 1em;
+	margin: 1 auto;
+	border: 1px solid gray;
 }
 
 th,
 td {
-	margin: 0;
-	border-bottom: 2px solid black;
-	padding: 1em;
+	border-bottom: 1px solid gray;
+	padding: 1em 1.5em;
 }
 
 .list-row {
-	background-color: #2a9d8f;
 	transition: background-color 0.2s;
 }
 
 .list-row:hover {
 	cursor: pointer;
-	background-color: $hover-color;
+	background-color: lightgray;
 }

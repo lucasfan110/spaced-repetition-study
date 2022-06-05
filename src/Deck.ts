@@ -1,30 +1,57 @@
 import { fs, path } from "@tauri-apps/api";
 
 export type Flashcard = {
-	front: string;
-	back: string;
+	question: string;
+	answer: string;
+	lastTimeCorrect: Date | null;
 };
 
-export default class Deck {
-	private deckName: string;
-	private flashcards: Flashcard[] = [];
+export type DeckJson = {
+	deckName: string;
+	flashcards: Flashcard[];
+};
 
-	private static getSaveDir = async (deckName: string): Promise<string> => {
+export class CannotReadFileError extends Error {
+	public constructor(path: string) {
+		super(`Failed to read data at ${path}`);
+
+		Object.setPrototypeOf(this, CannotReadFileError.prototype);
+	}
+
+	public test = () => {};
+}
+
+export class InvalidFormatError extends Error {
+	public constructor() {
+		super("Format is not valid");
+
+		Object.setPrototypeOf(this, InvalidFormatError.prototype);
+	}
+}
+
+export default class Deck {
+	private _deckName: string;
+	private _flashcards: Flashcard[] = [];
+
+	public constructor(deckName: string) {
+		this._deckName = deckName;
+	}
+
+	public static getSaveDir = async (deckName: string): Promise<string> => {
 		return `${await path.appDir()}flashcards/${deckName}/`;
 	};
 
-	public static loadDeck = async (
-		deckName: string
-	): Promise<Flashcard[] | null> => {
-		try {
-			return JSON.parse(
-				await fs.readTextFile(
-					`${await Deck.getSaveDir(deckName)}cards.json`
-				)
-			);
-		} catch (e) {
-			return null;
-		}
+	public static fromJson = (json: DeckJson): Deck => {
+		const deck = new Deck(json.deckName);
+		deck.flashcards = json.flashcards;
+		return deck;
+	};
+
+	public toJson = (): DeckJson => {
+		return {
+			deckName: this.deckName,
+			flashcards: this.flashcards,
+		};
 	};
 
 	public static getAvaliableDeckNames = async (): Promise<string[]> => {
@@ -36,7 +63,7 @@ export default class Deck {
 			.filter(dir => {
 				const children = dir.children;
 
-				if (children === undefined) {
+				if (!children) {
 					return false;
 				}
 
@@ -52,10 +79,6 @@ export default class Deck {
 			.map(dir => dir.name!);
 	};
 
-	public constructor(deckName: string) {
-		this.deckName = deckName;
-	}
-
 	private getSaveDir = async (): Promise<string> => {
 		return Deck.getSaveDir(this.deckName);
 	};
@@ -64,7 +87,7 @@ export default class Deck {
 		fs.createDir(await this.getSaveDir(), { recursive: true });
 		fs.writeFile({
 			path: `${await this.getSaveDir()}cards.json`,
-			contents: JSON.stringify(this.flashcards),
+			contents: JSON.stringify(this.toJson(), undefined, 4),
 		});
 	};
 
@@ -75,9 +98,47 @@ export default class Deck {
 
 	public changeDeckName = async (newName: string) => {
 		fs.removeDir(await this.getSaveDir(), { recursive: true });
-		this.deckName = newName;
+		this._deckName = newName;
 		this.save();
 	};
+
+	public get deckName(): string {
+		return this._deckName;
+	}
+
+	public get flashcards(): Flashcard[] {
+		return this._flashcards;
+	}
+
+	public set flashcards(value: Flashcard[]) {
+		this._flashcards = value;
+	}
+}
+
+async function loadDeck(deckName: string): Promise<Deck> {
+	const path = `${await Deck.getSaveDir(deckName)}cards.json`;
+
+	let json: string;
+	try {
+		json = await fs.readTextFile(path);
+	} catch {
+		throw new CannotReadFileError(path);
+	}
+
+	let deckJson: DeckJson;
+	try {
+		deckJson = JSON.parse(json, (key, value) => {
+			if (key === "lastTimeCorrect" && value !== null) {
+				return new Date(value);
+			}
+
+			return value;
+		}) as DeckJson;
+	} catch {
+		throw new InvalidFormatError();
+	}
+
+	return Deck.fromJson(deckJson);
 }
 
 export type Info = {
@@ -86,14 +147,18 @@ export type Info = {
 };
 
 export class RecentDeckInfo {
-	private m_info: Info[];
+	private _info: Info[];
 
 	private constructor(info: Info[]) {
-		this.m_info = info;
+		this._info = info;
 	}
 
+	private static filePath = async (): Promise<string> => {
+		return `${await path.appDir()}flashcards/recents.json`;
+	};
+
 	public static getInfo = async (): Promise<RecentDeckInfo> => {
-		const recentPath = `${await path.appDir()}flashcards/recents.json`;
+		const recentPath = await RecentDeckInfo.filePath();
 
 		let recentJson: string;
 		try {
@@ -119,21 +184,53 @@ export class RecentDeckInfo {
 		return new RecentDeckInfo(infos);
 	};
 
-	public deckOpened = (deckName: string) => {
-		const index = this.m_info.findIndex(info => info.deckName === deckName);
+	public openDeck = async (
+		deckName: string,
+		isNewDeck: boolean
+	): Promise<Deck | null> => {
+		const index = this.info.findIndex(info => info.deckName === deckName);
+
+		let deck: Deck | null = null;
+
 		if (index === -1) {
-			// Cannot found the deck with name, which means new deck is added.
-			this.m_info.push({ deckName, lastOpened: new Date() });
+			if (isNewDeck) {
+				this.info.push({ deckName, lastOpened: new Date() });
+				deck = new Deck(deckName);
+			} else {
+				deck = null;
+			}
 		} else {
-			// Move that element to the top.
-			const info = this.m_info.splice(index, 1)[0];
-			info.lastOpened = new Date();
-			this.m_info.unshift(info);
+			try {
+				deck = await loadDeck(deckName);
+			} catch (err) {
+				if (err instanceof CannotReadFileError) {
+					this.info.splice(index, 1);
+					deck = null;
+				} else if (err instanceof InvalidFormatError) {
+					deck = new Deck(deckName);
+				}
+			}
 		}
+
+		// Move that element to the top.
+		// If deck is null, then it means deck doesn't exist, which we won't update the recents.json
+		if (deck !== null) {
+			const info = this.info.splice(index, 1)[0];
+			info.lastOpened = new Date();
+			this.info.unshift(info);
+		}
+
+		const json = JSON.stringify(this.info, undefined, 4);
+		const path = await RecentDeckInfo.filePath();
+		await fs.writeFile({ path, contents: json });
+
+		console.log(`updated recents.json for deck name "${deckName}"`);
+
+		return deck;
 	};
 
-	get info() {
-		return this.m_info;
+	public get info() {
+		return this._info;
 	}
 }
 

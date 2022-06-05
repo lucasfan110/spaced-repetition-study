@@ -10,9 +10,7 @@ export default function HomePage(): JSX.Element {
 			key={deckName}
 			className="list-row"
 			onClick={() => {
-				recentDeck.deckOpened(deckName);
-				console.log(`going to /decks/${encodeURI(deckName)}`);
-				navigate(`/decks/${encodeURI(deckName)}`, { replace: true });
+				navigate(`/decks/${encodeURI(deckName)}`);
 			}}
 		>
 			<td>{deckName}</td>
@@ -21,12 +19,14 @@ export default function HomePage(): JSX.Element {
 	));
 
 	return (
-		<main className="home-page">
-			<h1>Welcome to Spaced Repetition Learning App!</h1>
+		<main className="container">
+			<h1 className="text-center">
+				Welcome to Spaced Repetition Learning App!
+			</h1>
 
-			<h2 className="center">Open recent</h2>
+			<h2 className="text-center mt-5">Open recent</h2>
 
-			<table className="recent-list">
+			<table className="recent-list container">
 				<thead>
 					<tr>
 						<th>Name</th>
