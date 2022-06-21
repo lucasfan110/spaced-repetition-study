@@ -1,26 +1,10 @@
-import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.scss";
-import { recentDeck } from "./Deck";
 import DeckNotFound from "./DeckNotFound";
-import DeckPage from "./DeckPage";
 import HomePage from "./HomePage";
 import LoadDeck from "./DeckPage/LoadDeck";
 
-export default function App() {
-	const [deckRoutes, setDeckRoutes] = React.useState<JSX.Element[]>([]);
-
-	React.useEffect(() => {
-		setDeckRoutes(
-			recentDeck.info.map(({ deckName }) => {
-				console.log(`mapping ${encodeURI(deckName)}`);
-				return (
-					<Route key={deckName} path={`${encodeURI(deckName)}/*`} />
-				);
-			})
-		);
-	}, []);
-
+export default function App(): JSX.Element {
 	return (
 		<Routes>
 			<Route index key="home-page" element={<HomePage />} />

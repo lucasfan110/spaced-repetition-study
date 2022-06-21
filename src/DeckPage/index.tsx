@@ -1,8 +1,22 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Route, Routes } from "react-router-dom";
+import React from "react";
+import Row from "react-bootstrap/Row";
+import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import Deck from "../Deck";
 import AddCard from "./AddCard";
+import "./index.scss";
+import ShowAll from "./ShowAll";
 import StudyDeck from "./StudyDeck";
+
+type Tabs = "none" | "show-cards" | "add-card";
+type Action = { type: "trigger"; to: Tabs };
+function setTab(state: Tabs, action: Action): Tabs {
+	switch (action.type) {
+		case "trigger":
+			return state === action.to ? "none" : action.to;
+	}
+
+	return state;
+}
 
 type Props = {
 	deck: Deck;
@@ -10,23 +24,36 @@ type Props = {
 export default function DeckPage({ deck }: Props): JSX.Element {
 	const navigate = useNavigate();
 
-	console.log(`is flashcards undefined? ${deck.flashcards === undefined}`);
+	const [tab, dispatch] = React.useReducer(setTab, "none");
 
 	return (
-		<main className="container">
+		<main className="container mt-5">
 			<StudyDeck deck={deck} />
 
-			<div className="row justify-content-center">
-				<Link to="add-card" className="btn btn-primary col-4">
+			<Row className="justify-content-center">
+				<Link
+					to={`${tab === "add-card" ? "" : "add-card"}`}
+					className="btn btn-primary col-4 me-1"
+					onClick={() => {
+						dispatch({ type: "trigger", to: "add-card" });
+					}}
+				>
 					Add Card
 				</Link>
-			</div>
-
-			<div className="row justify-content-center mt-2">
-				<Link to="/" className="btn btn-secondary col-4">
-					Go back
+				<Link
+					to={`${tab === "show-cards" ? "" : "show-cards"}`}
+					className={`btn btn-info col-4 me-1`}
+					onClick={() => {
+						dispatch({ type: "trigger", to: "show-cards" });
+					}}
+				>
+					{`${tab === "show-cards" ? "Hide" : "Show"}`} All Cards
 				</Link>
-			</div>
+			</Row>
+
+			<Link to="/" className="btn btn-secondary col-2 back-btn">
+				Go back
+			</Link>
 
 			<Routes>
 				<Route
@@ -40,6 +67,7 @@ export default function DeckPage({ deck }: Props): JSX.Element {
 						/>
 					}
 				/>
+				<Route path="show-cards" element={<ShowAll deck={deck} />} />
 			</Routes>
 		</main>
 	);

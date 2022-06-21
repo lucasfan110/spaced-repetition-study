@@ -1,0 +1,33 @@
+.card-terms {
+	list-style: none;
+	padding: 1rem;
+	transition: 1s;
+
+	.card-term {
+		border: 0.1rem solid black;
+		border-radius: 0.3rem;
+		margin: 0;
+		margin-bottom: 1rem;
+
+		.card-question,
+		.card-answer {
+			display: inline-block;
+			border: none;
+			resize: none;
+			overflow: auto;
+			padding: 1em;
+			outline: none;
+		}
+
+		.card-question {
+			border-right: 0.1rem solid black;
+			padding-right: 1em;
+			width: 30%;
+		}
+
+		.card-answer {
+			padding-left: 1em;
+			width: 70%;
+		}
+	}
+}

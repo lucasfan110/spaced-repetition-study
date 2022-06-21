@@ -1,9 +1,12 @@
 import { fs, path } from "@tauri-apps/api";
 
+export const DAYS_TO_MS = 86_400_000;
+
 export type Flashcard = {
 	question: string;
 	answer: string;
 	lastTimeCorrect: Date | null;
+	correctCount: number;
 };
 
 export type DeckJson = {
@@ -37,24 +40,24 @@ export default class Deck {
 		this._deckName = deckName;
 	}
 
-	public static getSaveDir = async (deckName: string): Promise<string> => {
+	public static async getSaveDir(deckName: string): Promise<string> {
 		return `${await path.appDir()}flashcards/${deckName}/`;
-	};
+	}
 
-	public static fromJson = (json: DeckJson): Deck => {
+	public static fromJson(json: DeckJson): Deck {
 		const deck = new Deck(json.deckName);
 		deck.flashcards = json.flashcards;
 		return deck;
-	};
+	}
 
-	public toJson = (): DeckJson => {
+	public toJson(): DeckJson {
 		return {
 			deckName: this.deckName,
 			flashcards: this.flashcards,
 		};
-	};
+	}
 
-	public static getAvaliableDeckNames = async (): Promise<string[]> => {
+	public static async getAvailableDeckNames(): Promise<string[]> {
 		const dirs = await fs.readDir(`${await path.appDir()}flashcards/`, {
 			recursive: true,
 		});
@@ -68,39 +71,61 @@ export default class Deck {
 				}
 
 				const containData = children.find(child => {
-					return (
-						child.name === "cards.json" &&
-						child.children === undefined
-					);
+					return child.name === "cards.json" && child.children === undefined;
 				});
-
 				return dir.name && containData !== undefined;
 			})
 			.map(dir => dir.name!);
-	};
+	}
 
-	private getSaveDir = async (): Promise<string> => {
+	private async getSaveDir(): Promise<string> {
 		return Deck.getSaveDir(this.deckName);
-	};
+	}
 
-	public save = async () => {
+	public async save() {
 		fs.createDir(await this.getSaveDir(), { recursive: true });
 		fs.writeFile({
 			path: `${await this.getSaveDir()}cards.json`,
 			contents: JSON.stringify(this.toJson(), undefined, 4),
 		});
-	};
+	}
 
-	public addCard = (card: Flashcard) => {
+	public addCard(card: Flashcard) {
 		this.flashcards.push(card);
 		this.save();
-	};
+	}
 
-	public changeDeckName = async (newName: string) => {
+	public async changeDeckName(newName: string) {
 		fs.removeDir(await this.getSaveDir(), { recursive: true });
 		this._deckName = newName;
 		this.save();
-	};
+	}
+
+	public spacedRepetitionFilter(): Flashcard[] {
+		return this.flashcards.filter(card => {
+			if (card.lastTimeCorrect === null) {
+				return true;
+			}
+
+			const now = new Date();
+			const today = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+
+			const lastTimeCorrectDate = new Date(
+				card.lastTimeCorrect.getFullYear(),
+				card.lastTimeCorrect.getMonth() + 1,
+				card.lastTimeCorrect.getDate()
+			);
+
+			const days = Math.round((today.getTime() - lastTimeCorrectDate.getTime()) / DAYS_TO_MS);
+			console.log("days = ", days);
+
+			if (days >= card.correctCount) {
+				return true;
+			}
+
+			return false;
+		});
+	}
 
 	public get deckName(): string {
 		return this._deckName;
@@ -153,11 +178,11 @@ export class RecentDeckInfo {
 		this._info = info;
 	}
 
-	private static filePath = async (): Promise<string> => {
-		return `${await path.appDir()}flashcards/recents.json`;
-	};
+	private static async filePath(): Promise<string> {
+		return `${await path.appDir()}flashcards/recent.json`;
+	}
 
-	public static getInfo = async (): Promise<RecentDeckInfo> => {
+	public static async getInfo(): Promise<RecentDeckInfo> {
 		const recentPath = await RecentDeckInfo.filePath();
 
 		let recentJson: string;
@@ -177,17 +202,14 @@ export class RecentDeckInfo {
 				return value;
 			}) as Info[];
 		} catch (e) {
-			console.error("Failed to parse recents.json! Error: " + e);
+			console.error("Failed to parse recent.json! Error: " + e);
 			return new RecentDeckInfo([]);
 		}
 
 		return new RecentDeckInfo(infos);
-	};
+	}
 
-	public openDeck = async (
-		deckName: string,
-		isNewDeck: boolean
-	): Promise<Deck | null> => {
+	public openDeck = async (deckName: string, isNewDeck: boolean): Promise<Deck | null> => {
 		const index = this.info.findIndex(info => info.deckName === deckName);
 
 		let deck: Deck | null = null;
@@ -213,7 +235,7 @@ export class RecentDeckInfo {
 		}
 
 		// Move that element to the top.
-		// If deck is null, then it means deck doesn't exist, which we won't update the recents.json
+		// If deck is null, then it means deck doesn't exist, which we won't update the recent.json
 		if (deck !== null) {
 			const info = this.info.splice(index, 1)[0];
 			info.lastOpened = new Date();
@@ -224,10 +246,16 @@ export class RecentDeckInfo {
 		const path = await RecentDeckInfo.filePath();
 		await fs.writeFile({ path, contents: json });
 
-		console.log(`updated recents.json for deck name "${deckName}"`);
+		console.log(`updated recent.json for deck name "${deckName}"`);
 
 		return deck;
 	};
+
+	public createDeck(title: string) {
+		const newDeck = new Deck(title);
+		newDeck.save();
+		this.openDeck(title, true);
+	}
 
 	public get info() {
 		return this._info;

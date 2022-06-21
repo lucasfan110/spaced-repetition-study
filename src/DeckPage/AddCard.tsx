@@ -1,13 +1,28 @@
+import React from "react";
+import { Button, Form, Modal } from "react-bootstrap";
 import { Flashcard } from "../Deck";
+import "./AddCard.scss";
 
 type Props = {
 	onSubmit?: (card: Flashcard) => void;
 };
+
 export default function AddCard({ onSubmit }: Props): JSX.Element {
+	const [show, setShow] = React.useState(false);
+	const toBeAdded = React.useRef<Flashcard>();
+
+	const onHide = () => {
+		if (onSubmit !== undefined) {
+			// Should never be undefined since when dialog triggered the form data has already been saved.
+			onSubmit(toBeAdded.current!);
+			setShow(false);
+		}
+	};
+
 	return (
-		<section>
+		<section className="m-5">
 			<h2 className="text-center mt-5">Add a new card!</h2>
-			<form
+			<Form
 				onSubmit={e => {
 					e.preventDefault();
 
@@ -17,41 +32,60 @@ export default function AddCard({ onSubmit }: Props): JSX.Element {
 						answer: { value: string };
 					};
 
-					if (onSubmit !== undefined) {
-						onSubmit({
-							question: target.question.value,
-							answer: target.answer.value,
-							lastTimeCorrect: null,
-						});
-					}
+					toBeAdded.current = {
+						question: target.question.value,
+						answer: target.answer.value,
+						lastTimeCorrect: new Date(),
+						correctCount: 1,
+					};
+					setShow(true);
 				}}
 			>
-				<div className="form-group">
-					<label htmlFor="question">Type in the question</label>
-					<textarea
+				<Form.Group>
+					<Form.Label htmlFor="question">
+						Type in the question
+					</Form.Label>
+					<Form.Control
+						as="textarea"
 						id="question"
 						name="question"
-						className="form-control card-input"
+						className="card-input"
 						required
-					></textarea>
-				</div>
-				<div className="form-group">
-					<label htmlFor="answer">
+					></Form.Control>
+				</Form.Group>
+				<Form.Group>
+					<Form.Label htmlFor="answer">
 						Type in the answer of the flash card
-					</label>
-					<textarea
+					</Form.Label>
+					<Form.Control
 						id="answer"
 						name="answer"
-						className="form-control card-input"
+						as="textarea"
+						className="card-input"
 						required
-					></textarea>
-				</div>
+					></Form.Control>
+				</Form.Group>
 				<section className="row mt-5 justify-content-center">
-					<button type="submit" className="btn btn-primary col-4">
+					<Button type="submit" className="col-4">
 						Add
-					</button>
+					</Button>
 				</section>
-			</form>
+			</Form>
+
+			<Modal show={show} onHide={onHide}>
+				<Modal.Header closeButton>
+					<Modal.Title>Added Successful!</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					Successfully added this flashcard to the deck! It will show
+					up for you to review in 24 hours
+				</Modal.Body>
+				<Modal.Footer>
+					<Button variant="primary" onClick={onHide}>
+						Ok
+					</Button>
+				</Modal.Footer>
+			</Modal>
 		</section>
 	);
 }
