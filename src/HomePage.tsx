@@ -2,16 +2,17 @@ import { faPenSquare, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import AddDeck from "./AddDeck";
 import Confirm from "./Confirm";
 import { recentDeck } from "./Deck";
 import "./HomePage.scss";
+import AddDeck from "./TitleEdit/AddDeck";
+import EditDeck from "./TitleEdit/EditDeck";
 
 type Props = {};
 
 type State = {
     addDeck: boolean;
+    editDeck: [boolean, number];
     deleting: [boolean, number];
 };
 
@@ -22,11 +23,21 @@ export default class HomePage extends React.Component<Props, State> {
         this.state = {
             addDeck: false,
             deleting: [false, -1],
+            editDeck: [false, -1],
         };
     }
 
     private mapRecentList() {
-        return recentDeck.info.map(({ deckName, lastOpened }, index) => (
+        if (recentDeck.info.length === 0) {
+            return (
+                <p>
+                    There is no deck in here yet! Click the add deck button to add decks and start
+                    your study journey!
+                </p>
+            );
+        }
+
+        const list = recentDeck.info.map(({ deckName, lastOpened }, index) => (
             <tr
                 key={deckName}
                 className="list-row"
@@ -42,6 +53,7 @@ export default class HomePage extends React.Component<Props, State> {
                             className="edit-button"
                             onClick={e => {
                                 e.stopPropagation();
+                                this.setState({ editDeck: [true, index] });
                             }}
                         >
                             <FontAwesomeIcon icon={faPenSquare} size="2x" />
@@ -59,6 +71,18 @@ export default class HomePage extends React.Component<Props, State> {
                 </td>
             </tr>
         ));
+
+        return (
+            <table className="recent-list container">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th colSpan={2}>Last Opened</th>
+                    </tr>
+                </thead>
+                <tbody>{list}</tbody>
+            </table>
+        );
     }
 
     render(): React.ReactNode {
@@ -68,24 +92,16 @@ export default class HomePage extends React.Component<Props, State> {
             <main className="container">
                 <h1 className="text-center">Welcome to Spaced Repetition Learning App!</h1>
                 <h2 className="text-center mt-5">Open recent</h2>
-                <table className="recent-list container">
+                {/* <table className="recent-list container">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th colSpan={2}>Last Opened</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {recentList}
-                        <tr key="test-404">
-                            <td>
-                                <Link to="decks/test-404" key="test-404" className="">
-                                    Test 404
-                                </Link>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <tbody>{recentList}</tbody>
+                </table> */}
+                {recentList}
                 <Row className="justify-content-center">
                     <Button
                         variant="primary"
@@ -95,6 +111,9 @@ export default class HomePage extends React.Component<Props, State> {
                         Add Deck
                     </Button>
                 </Row>
+
+                {/* These are pop up windows */}
+                {/* Add Deck Dialog */}
                 <AddDeck
                     show={this.state.addDeck}
                     onSubmit={e => {
@@ -104,6 +123,23 @@ export default class HomePage extends React.Component<Props, State> {
                         }
                         const title = e.deckTitle;
                         recentDeck.createDeck(title);
+                    }}
+                />
+
+                {/* Edit Deck Dialog */}
+                <EditDeck
+                    show={this.state.editDeck[0]}
+                    onSubmit={async e => {
+                        const index = this.state.editDeck[1];
+                        this.setState({ editDeck: [false, -1] });
+
+                        if (e.canceled) {
+                            return;
+                        }
+
+                        const newTitle = e.deckTitle;
+                        await recentDeck.editDeck(index, newTitle);
+                        this.forceUpdate();
                     }}
                 />
 

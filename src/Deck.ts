@@ -1,4 +1,6 @@
 import { fs, path } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/tauri";
+import * as FsUtil from "./FsUtil";
 
 export const DAYS_TO_MS = 86_400_000;
 
@@ -87,7 +89,7 @@ export default class Deck {
     }
 
     public async save() {
-        fs.createDir(await this.getSaveDir(), { recursive: true });
+        await fs.createDir(await this.getSaveDir(), { recursive: true });
         fs.writeFile({
             path: `${await this.getSaveDir()}cards.json`,
             contents: JSON.stringify(this.toJson(), undefined, 4),
@@ -271,9 +273,53 @@ export class RecentDeckInfo {
             return;
         }
 
-        fs.removeDir(await Deck.getSaveDir(info.deckName), { recursive: true });
+        const exist = await FsUtil.isDir(await Deck.getSaveDir(info.deckName));
+
+        try {
+            await fs.removeDir(await Deck.getSaveDir(info.deckName), { recursive: true });
+        } catch (e) {
+            if (exist) {
+                alert(`Failed to remove deck. Error: (${e})`);
+                return;
+            }
+        }
 
         this.info.splice(index, 1);
+        this.saveInfo();
+    }
+
+    public async editDeck(index: number, newName: string) {
+        const info = this.info[index];
+
+        if (info === undefined) {
+            return;
+        }
+
+        const exist = await FsUtil.isDir(await Deck.getSaveDir(info.deckName));
+
+        try {
+            await FsUtil.renameDir(
+                await Deck.getSaveDir(info.deckName),
+                await Deck.getSaveDir(newName)
+            );
+        } catch (e) {
+            alert(`Failed to rename deck. Error: (${e})`);
+
+            if (exist) {
+                return;
+            } else {
+                const isDeleting = confirm(
+                    "It seems like the deck you are trying to modify does not exist. Do you want to delete it instead?"
+                );
+
+                if (isDeleting) {
+                    await this.deleteDeck(index);
+                    return;
+                }
+            }
+        }
+
+        info.deckName = newName;
         this.saveInfo();
     }
 
