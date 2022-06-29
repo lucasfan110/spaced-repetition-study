@@ -1,21 +1,49 @@
 @import "./variables.scss";
 
 .recent-list {
-	margin: 1 auto;
-	border: 1px solid gray;
+    margin: 1 auto;
+    border: 1px solid gray;
 }
 
 th,
 td {
-	border-bottom: 1px solid gray;
-	padding: 1em 1.5em;
+    &:nth-of-type(3) {
+        width: 20%;
+    }
+
+    border-bottom: 1px solid gray;
+    padding: 1em 1.5em;
 }
 
 .list-row {
-	transition: background-color 0.2s;
+    transition: background-color 0.2s;
 }
 
 .list-row:hover {
-	cursor: pointer;
-	background-color: lightgray;
+    cursor: pointer;
+    background-color: lightgray;
+}
+
+.row-control {
+    display: flex;
+    justify-content: end;
+
+    .edit-button,
+    .delete-button {
+        background-color: transparent;
+        border: none;
+        transition: color 0.2s ease-out;
+
+        &:hover {
+            color: rgb(104, 104, 104);
+        }
+    }
+
+    .delete-button {
+        float: right;
+    }
+
+    .edit-button {
+        margin-right: 1em;
+    }
 }
