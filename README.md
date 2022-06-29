@@ -5,5 +5,5 @@ the [spaces repetition](https://en.wikipedia.org/wiki/Spaced_repetition) pattern
 
 ## Todos:
 
--   [ ] Finish utility for editing deck name
+-   [x] Finish utility for editing deck name
 -   [ ] Add ability to edit/delete individual cards as well as clear all cards.
