@@ -50,7 +50,7 @@ export default class HomePage extends React.Component<Props, State> {
                 <td>
                     <div className="row-control">
                         <button
-                            className="edit-button"
+                            className="icon-button"
                             onClick={e => {
                                 e.stopPropagation();
                                 this.setState({ editDeck: [true, index] });
@@ -59,7 +59,7 @@ export default class HomePage extends React.Component<Props, State> {
                             <FontAwesomeIcon icon={faPenSquare} size="2x" />
                         </button>
                         <button
-                            className="delete-button"
+                            className="icon-button"
                             onClick={e => {
                                 e.stopPropagation();
                                 this.setState({ deleting: [true, index] });
@@ -92,15 +92,6 @@ export default class HomePage extends React.Component<Props, State> {
             <main className="container">
                 <h1 className="text-center">Welcome to Spaced Repetition Learning App!</h1>
                 <h2 className="text-center mt-5">Open recent</h2>
-                {/* <table className="recent-list container">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th colSpan={2}>Last Opened</th>
-                        </tr>
-                    </thead>
-                    <tbody>{recentList}</tbody>
-                </table> */}
                 {recentList}
                 <Row className="justify-content-center">
                     <Button

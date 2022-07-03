@@ -1,1 +1,15 @@
 $hover-color: #3bd4c3;
+$button-hover: rgb(104, 104, 104);
+
+@mixin icon-button {
+    .icon-button {
+        background-color: transparent;
+        border: none;
+        transition: color 0.2s ease-out;
+
+        &:hover {
+            color: $button-hover;
+        }
+        margin-right: 1em;
+    }
+}

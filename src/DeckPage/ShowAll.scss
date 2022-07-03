@@ -1,32 +1,49 @@
+@import "../variables.scss";
+
 .card-terms {
     list-style: none;
     padding: 1rem;
     transition: 1s;
+    height: 1px;
+
+    col:nth-of-type(1) {
+        width: 30%;
+    }
+    col:nth-of-type(2) {
+        width: 60%;
+    }
+    col:nth-of-type(3) {
+        width: 10%;
+    }
 
     .card-term {
         border: 0.1rem solid black;
         border-radius: 0.3rem;
+        height: 100%;
         margin: 0;
 
         .card-question,
         .card-answer {
-            display: inline-block;
-            border: none;
-            resize: none;
-            overflow: auto;
             padding: 1em;
-            outline: none;
         }
 
         .card-question {
             border-right: 0.1rem solid black;
-            padding-right: 1em;
-            width: 30%;
+            width: 100%;
+            min-height: 100%;
+            text-align: center;
         }
 
         .card-answer {
-            padding-left: 1em;
-            width: 70%;
+            // height: 100%;
+            width: 100%;
         }
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: start;
+
+        @include icon-button;
     }
 }

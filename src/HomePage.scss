@@ -28,22 +28,5 @@ td {
     display: flex;
     justify-content: end;
 
-    .edit-button,
-    .delete-button {
-        background-color: transparent;
-        border: none;
-        transition: color 0.2s ease-out;
-
-        &:hover {
-            color: rgb(104, 104, 104);
-        }
-    }
-
-    .delete-button {
-        float: right;
-    }
-
-    .edit-button {
-        margin-right: 1em;
-    }
+    @include icon-button;
 }

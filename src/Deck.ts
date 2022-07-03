@@ -1,5 +1,4 @@
 import { fs, path } from "@tauri-apps/api";
-import { invoke } from "@tauri-apps/api/tauri";
 import * as FsUtil from "./FsUtil";
 
 export const DAYS_TO_MS = 86_400_000;
@@ -22,8 +21,6 @@ export class CannotReadFileError extends Error {
 
         Object.setPrototypeOf(this, CannotReadFileError.prototype);
     }
-
-    public test = () => {};
 }
 
 export class InvalidFormatError extends Error {
@@ -296,6 +293,7 @@ export class RecentDeckInfo {
         }
 
         const exist = await FsUtil.isDir(await Deck.getSaveDir(info.deckName));
+        let variable = 20;
 
         try {
             await FsUtil.renameDir(
