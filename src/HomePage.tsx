@@ -12,8 +12,18 @@ type Props = {};
 
 type State = {
     addDeck: boolean;
-    editDeck: [boolean, number];
+    editDeck: {
+        isEditing: boolean;
+        editIndex: number;
+        defaultTitle: string;
+    };
     deleting: [boolean, number];
+};
+
+const editDeckDefault = {
+    isEditing: false,
+    editIndex: -1,
+    defaultTitle: "",
 };
 
 export default class HomePage extends React.Component<Props, State> {
@@ -23,7 +33,7 @@ export default class HomePage extends React.Component<Props, State> {
         this.state = {
             addDeck: false,
             deleting: [false, -1],
-            editDeck: [false, -1],
+            editDeck: editDeckDefault,
         };
     }
 
@@ -53,7 +63,13 @@ export default class HomePage extends React.Component<Props, State> {
                             className="icon-button"
                             onClick={e => {
                                 e.stopPropagation();
-                                this.setState({ editDeck: [true, index] });
+                                this.setState({
+                                    editDeck: {
+                                        isEditing: true,
+                                        editIndex: index,
+                                        defaultTitle: deckName,
+                                    },
+                                });
                             }}
                         >
                             <FontAwesomeIcon icon={faPenSquare} size="2x" />
@@ -119,10 +135,11 @@ export default class HomePage extends React.Component<Props, State> {
 
                 {/* Edit Deck Dialog */}
                 <EditDeck
-                    show={this.state.editDeck[0]}
+                    show={this.state.editDeck.isEditing}
+                    key={this.state.editDeck.editIndex}
                     onSubmit={async e => {
-                        const index = this.state.editDeck[1];
-                        this.setState({ editDeck: [false, -1] });
+                        const index = this.state.editDeck.editIndex;
+                        this.setState({ editDeck: editDeckDefault });
 
                         if (e.canceled) {
                             return;
@@ -132,6 +149,7 @@ export default class HomePage extends React.Component<Props, State> {
                         await recentDeck.editDeck(index, newTitle);
                         this.forceUpdate();
                     }}
+                    defaultTitle={this.state.editDeck.defaultTitle}
                 />
 
                 {/* Confirm Dialog, which is hidden and only activated when `this.state.deleting[0]` is true */}

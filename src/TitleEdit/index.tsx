@@ -14,6 +14,7 @@ export type SubmitEvent = {
 export type DefaultProps = {
     show?: boolean;
     onSubmit?: (event: SubmitEvent) => void;
+    defaultTitle?: string;
 };
 
 type Props = DefaultProps & {
@@ -26,6 +27,7 @@ export default function TitleEdit({
     confirmText,
     show = false,
     onSubmit = () => {},
+    defaultTitle = "",
 }: Props): JSX.Element {
     const titleRef = React.useRef<HTMLInputElement>(null);
 
@@ -53,7 +55,13 @@ export default function TitleEdit({
                         <Alert variant="danger" show={invalidInputText !== null}>
                             {invalidInputText}
                         </Alert>
-                        <Form.Control type="text" ref={titleRef} name="title" id="title" />
+                        <Form.Control
+                            type="text"
+                            ref={titleRef}
+                            name="title"
+                            id="title"
+                            defaultValue={defaultTitle}
+                        />
                     </Form>
                 </Container>
             </Modal.Body>
@@ -77,7 +85,7 @@ export default function TitleEdit({
 
                         close({
                             canceled: false,
-                            deckTitle: titleRef.current?.value ?? "",
+                            deckTitle: titleRef.current?.value.trim() ?? "",
                         });
                     }}
                 >

@@ -11,7 +11,6 @@ export type Flashcard = {
 };
 
 export type DeckJson = {
-    deckName: string;
     flashcards: Flashcard[];
 };
 
@@ -43,15 +42,18 @@ export default class Deck {
         return `${await path.appDir()}flashcards/${deckName}/`;
     }
 
-    public static fromJson(json: DeckJson): Deck {
-        const deck = new Deck(json.deckName);
+    public static fromJson(name: string, json: DeckJson): Deck {
+        const deck = new Deck(name);
         deck.flashcards = json.flashcards;
         return deck;
     }
 
+    public clone(): Deck {
+        return Deck.fromJson(this._deckName, this.toJson());
+    }
+
     public toJson(): DeckJson {
         return {
-            deckName: this.deckName,
             flashcards: this.flashcards,
         };
     }
@@ -78,30 +80,30 @@ export default class Deck {
     }
 
     private async getSaveDir(): Promise<string> {
-        return Deck.getSaveDir(this.deckName);
+        return await Deck.getSaveDir(this.deckName);
     }
 
     public async delete() {
-        fs.removeDir(await this.getSaveDir(), { recursive: true });
+        await fs.removeDir(await this.getSaveDir(), { recursive: true });
     }
 
     public async save() {
         await fs.createDir(await this.getSaveDir(), { recursive: true });
-        fs.writeFile({
+        await fs.writeFile({
             path: `${await this.getSaveDir()}cards.json`,
             contents: JSON.stringify(this.toJson(), undefined, 4),
         });
     }
 
-    public addCard(card: Flashcard) {
+    public async addCard(card: Flashcard) {
         this.flashcards.push(card);
-        this.save();
+        await this.save();
     }
 
     public async changeDeckName(newName: string) {
         fs.removeDir(await this.getSaveDir(), { recursive: true });
         this._deckName = newName;
-        this.save();
+        await this.save();
     }
 
     public spacedRepetitionFilter(): Flashcard[] {
@@ -166,7 +168,7 @@ async function loadDeck(deckName: string): Promise<Deck> {
         throw new InvalidFormatError();
     }
 
-    return Deck.fromJson(deckJson);
+    return Deck.fromJson(deckName, deckJson);
 }
 
 export type Info = {
