@@ -22,8 +22,9 @@ function setTab(state: Tabs, action: Action): Tabs {
 type Props = {
     deck: Deck;
     deleteCard: (index: number) => void;
+    editCard: (index: number, newQuestion: string, newAnswer: string) => void;
 };
-export default function DeckPage({ deck, deleteCard }: Props): JSX.Element {
+export default function DeckPage({ deck, deleteCard, editCard }: Props): JSX.Element {
     const navigate = useNavigate();
 
     const [tab, dispatchTab] = React.useReducer(setTab, "none");
@@ -71,7 +72,7 @@ export default function DeckPage({ deck, deleteCard }: Props): JSX.Element {
                 />
                 <Route
                     path="show-cards"
-                    element={<ShowAll deck={deck} deleteCard={deleteCard} />}
+                    element={<ShowAll deck={deck} deleteCard={deleteCard} editCard={editCard} />}
                 />
             </Routes>
         </main>

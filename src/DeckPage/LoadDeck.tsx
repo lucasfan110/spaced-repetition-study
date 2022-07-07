@@ -61,6 +61,35 @@ export default function LoadDeck({ isNewDeck }: Props) {
                     deckClone.save();
                     setDeck(deckClone);
                 }}
+                editCard={(index, newQuestion, newAnswer) => {
+                    const deckClone = deck.clone();
+                    // This is for the immutability crap
+                    // But this does not modify anything so I guess functional programmer will love it!!!!!
+                    // setDeck(deck =>
+                    //     Deck.fromJson(deck?.deckName, deckClone.flashcards.map((value, i) => {
+                    //         if (i === index) {
+                    //             return {
+                    //                 ...value,
+                    //                 question: newQuestion,
+                    //                 answer: newAnswer,
+                    //             };
+                    //         }
+                    //         return value;
+                    //     }))
+                    // );
+                    deckClone.flashcards = deckClone.flashcards.map((value, i) => {
+                        if (i === index) {
+                            return {
+                                ...value,
+                                question: newQuestion,
+                                answer: newAnswer,
+                            };
+                        }
+                        return value;
+                    });
+                    deckClone.save();
+                    setDeck(deckClone);
+                }}
             />
         );
     }

@@ -4,14 +4,16 @@ import React from "react";
 import Row from "react-bootstrap/Row";
 import Confirm from "../Confirm";
 import Deck from "../Deck";
+import EditCard from "./EditCard";
 import "./ShowAll.scss";
 
 type Props = {
     deck: Deck;
     deleteCard: (index: number) => void;
+    editCard: (index: number, newQuestion: string, newAnswer: string) => void;
 };
 
-export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
+export default function ShowAll({ deck, deleteCard, editCard }: Props): JSX.Element {
     const [deleteInfo, setDeleteInfo] = React.useState<{ deleting: boolean; index: number | null }>(
         {
             deleting: false,
@@ -19,7 +21,10 @@ export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
         }
     );
 
-    const editCard = (index: number) => {};
+    const [editInfo, setEditInfo] = React.useState<{ editing: boolean; index: number | null }>({
+        editing: false,
+        index: null,
+    });
 
     const displayCards = () => {
         if (deck.flashcards.length === 0) {
@@ -31,7 +36,7 @@ export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
             const ansRef = React.useRef<HTMLDivElement>(null);
 
             return (
-                <tr className="card-term">
+                <tr className="card-term" key={`card-${index}`}>
                     <td>
                         <div className="card-question" ref={quesRef}>
                             {card.question}
@@ -44,7 +49,10 @@ export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
                     </td>
                     <td>
                         <div className="buttons">
-                            <button className="icon-button" onClick={() => editCard(index)}>
+                            <button
+                                className="icon-button"
+                                onClick={() => setEditInfo({ editing: true, index })}
+                            >
                                 <FontAwesomeIcon icon={faPenSquare} size="2x" />
                             </button>
                             <button
@@ -69,7 +77,7 @@ export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
                         <col />
                     </colgroup>
                     <thead>
-                        <tr className="card-term">
+                        <tr className="card-term" key="ques-ans">
                             <th className="text-center">Questions</th>
                             <th className="text-center" colSpan={2}>
                                 Answers
@@ -78,6 +86,33 @@ export default function ShowAll({ deck, deleteCard }: Props): JSX.Element {
                     </thead>
                     <tbody>{deckList}</tbody>
                 </table>
+
+                <EditCard
+                    key={editInfo.index ?? -1}
+                    show={editInfo.editing}
+                    defaultQuestion={(() => {
+                        if (editInfo.index === null) {
+                            return undefined;
+                        }
+
+                        return deck.flashcards[editInfo.index].question;
+                    })()}
+                    defaultAnswer={(() => {
+                        if (editInfo.index === null) {
+                            return undefined;
+                        }
+
+                        return deck.flashcards[editInfo.index].answer;
+                    })()}
+                    onSubmit={(newQues, newAns) => {
+                        if (editInfo.index === null) {
+                            return;
+                        }
+
+                        editCard(editInfo.index, newQues, newAns);
+                    }}
+                    onClose={() => setEditInfo({ editing: false, index: null })}
+                />
 
                 <Confirm
                     show={deleteInfo.deleting}
