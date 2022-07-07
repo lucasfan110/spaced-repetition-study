@@ -1,9 +1,11 @@
 import { fs, path } from "@tauri-apps/api";
 import * as FsUtil from "./FsUtil";
+import * as uuid from "uuid";
 
 export const DAYS_TO_MS = 86_400_000;
 
 export type Flashcard = {
+    id: string;
     question: string;
     answer: string;
     lastTimeCorrect: Date | null;
@@ -11,6 +13,7 @@ export type Flashcard = {
 };
 
 export type DeckJson = {
+    id: string;
     flashcards: Flashcard[];
 };
 
@@ -31,10 +34,12 @@ export class InvalidFormatError extends Error {
 }
 
 export default class Deck {
+    private _id: string;
     private _deckName: string;
     private _flashcards: Flashcard[] = [];
 
     public constructor(deckName: string) {
+        this._id = uuid.v4();
         this._deckName = deckName;
     }
 
@@ -54,6 +59,7 @@ export default class Deck {
 
     public toJson(): DeckJson {
         return {
+            id: this._id,
             flashcards: this.flashcards,
         };
     }
@@ -143,6 +149,10 @@ export default class Deck {
     public set flashcards(value: Flashcard[]) {
         this._flashcards = value;
     }
+
+    public get id() {
+        return this._id;
+    }
 }
 
 async function loadDeck(deckName: string): Promise<Deck> {
@@ -172,6 +182,7 @@ async function loadDeck(deckName: string): Promise<Deck> {
 }
 
 export type Info = {
+    id: string;
     deckName: string;
     lastOpened: Date;
 };
@@ -227,8 +238,8 @@ export class RecentDeckInfo {
 
         if (index === -1) {
             if (isNewDeck) {
-                this.info.push({ deckName, lastOpened: new Date() });
                 deck = new Deck(deckName);
+                this.info.push({ id: deck.id, deckName, lastOpened: new Date() });
             } else {
                 deck = null;
             }

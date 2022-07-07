@@ -36,7 +36,7 @@ export default function ShowAll({ deck, deleteCard, editCard }: Props): JSX.Elem
             const ansRef = React.useRef<HTMLDivElement>(null);
 
             return (
-                <tr className="card-term" key={`card-${index}`}>
+                <tr className="card-term" key={`card-${card.id}`}>
                     <td>
                         <div className="card-question" ref={quesRef}>
                             {card.question}

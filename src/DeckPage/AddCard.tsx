@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
+import * as uuid from "uuid";
 import { Flashcard } from "../Deck";
 import "./AddCard.scss";
 
@@ -33,6 +34,7 @@ export default function AddCard({ onSubmit }: Props): JSX.Element {
                     };
 
                     toBeAdded.current = {
+                        id: uuid.v4(),
                         question: target.question.value.trim(),
                         answer: target.answer.value.trim(),
                         lastTimeCorrect: new Date(),

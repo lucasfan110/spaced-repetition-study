@@ -47,9 +47,9 @@ export default class HomePage extends React.Component<Props, State> {
             );
         }
 
-        const list = recentDeck.info.map(({ deckName, lastOpened }, index) => (
+        const list = recentDeck.info.map(({ id, deckName, lastOpened }, index) => (
             <tr
-                key={deckName}
+                key={`deck-${id}`}
                 className="list-row"
                 onClick={() => {
                     window.location.href = `/decks/${encodeURI(deckName)}`;
@@ -91,7 +91,7 @@ export default class HomePage extends React.Component<Props, State> {
         return (
             <table className="recent-list container">
                 <thead>
-                    <tr>
+                    <tr key="head">
                         <th>Name</th>
                         <th colSpan={2}>Last Opened</th>
                     </tr>
