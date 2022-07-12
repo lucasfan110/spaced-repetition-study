@@ -1,13 +1,13 @@
 [package]
 name = "app"
-version = "0.1.0"
+version = "1.0.0"
 description = "A spaced repetition learning program"
 authors = ["Lucas Fan"]
 license = "MIT"
-repository = ""
+repository = "https://github.com/FBI-open-up0126/spaced-repetition-study"
 default-run = "app"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.61"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
