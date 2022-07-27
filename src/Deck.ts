@@ -1,7 +1,6 @@
 import { fs, path } from "@tauri-apps/api";
-// import FsUtil from "./FsUtil";
 import * as uuid from "uuid";
-import FsUtil from "./FsUtil";
+import * as FsUtil from "./FsUtil";
 
 export const DAYS_TO_MS = 86_400_000;
 

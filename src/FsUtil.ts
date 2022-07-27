@@ -10,8 +10,3 @@ export async function renameDir(from: string, to: string) {
 export async function isDir(dir: string): Promise<boolean> {
     return await invoke<boolean>("is_dir", { dir });
 }
-
-export default {
-    renameDir,
-    isDir,
-};
